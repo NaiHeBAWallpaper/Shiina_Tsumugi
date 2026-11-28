@@ -49,7 +49,8 @@ const subtitleLocales = {
 	Chinese: 'zh-Hans',
 	TraditionalChinese: 'zh-Hant',
 	Japanese: 'ja',
-	Korean: 'ko'
+	Korean: 'ko',
+	Thai: 'th'
 };
 let isVoicelinePlaying = false;
 
@@ -81,7 +82,8 @@ const AUDIO_DETAIL = [
             Korean: [
                 "모든 사람의 마음속에 어둠이 존재합니다.",
                 "우리 모두는 우리 자신의 걱정을 가지고 있습니다. 우리 길을 걸으면서 길을 잃습니다."
-            ]
+            ],
+            Thai: ["ในใจของทุกคนล้วนมีความมืดอยู่","ต่างคนต่างแบกความกังวลของตัวเอง แล้วเดินไปตามเส้นทางทั้งที่ยังลังเล"]
         }
     },
     {
@@ -105,7 +107,8 @@ const AUDIO_DETAIL = [
             Korean: [
                 "...나도 마찬가지입니다.",
                 "때로는 이것이 정말로 나에게 올바른 길인지 궁금해하는 때가 있습니다."
-            ]
+            ],
+            Thai: ["—ฉันเองก็เหมือนกันค่ะ","บางครั้งฉันก็อดกังวลไม่ได้ ว่าเส้นทางที่เลือกนี้ถูกแล้วหรือยัง"]
         }
     },
     {
@@ -129,7 +132,8 @@ const AUDIO_DETAIL = [
             Korean: [
                 "저같은 사람에게는 그런 말을 하셨어요",
                 "당신이 저를 지지해 주셔서 제가 자유롭고 후회 없이 살아갈 수 있었으면 합니다."
-            ]
+            ],
+            Thai: ["แต่คุณครูเคยบอกกับฉันไว้ใช่ไหมคะ","ว่าจะคอยสนับสนุนให้ฉันได้ใช้ชีวิตอย่างอิสระ—โดยไม่ต้องนึกเสียใจทีหลัง"]
         }
     },
     {
@@ -153,7 +157,8 @@ const AUDIO_DETAIL = [
             Korean: [
                 "그래서, 상사님...",
                 "...내 어둠을 밝히는 빛이었다."
-            ]
+            ],
+            Thai: ["เพราะอย่างนั้น คุณครูจึงเป็น...","—‘แสงที่ส่องสว่างในความมืดของฉัน’ ค่ะ"]
         }
     },
     {
@@ -177,7 +182,8 @@ const AUDIO_DETAIL = [
             Korean: [
                 "이 노래를 당신에게 바칠 수 있게 해줘, 내 빛",
                 "이 멜로디를 들어봐요"
-            ]
+            ],
+            Thai: ["ขอมอบเพลงนี้ให้แก่คุณ ผู้เป็นแสงสว่างของฉัน","โปรดฟังท่วงทำนอง... ที่ฉันบรรจงใส่ความขอบคุณลงไปนะคะ"]
         }
     }
 ];
@@ -303,7 +309,7 @@ function playVoiceline() {
 			track.play().catch(finish);
 
 			if (dialogBox) {
-				textbox.textContent = dialog[window.selectedLanguage][index];
+				textbox.textContent = getSubtitleText(dialog, window.selectedLanguage, index);
 				textbox.style.opacity = 1;
 			}
 		},
@@ -479,6 +485,16 @@ function setMouse(event) {
 	return { x: ax - canvas.width * positionX, y: ay - canvas.height * positionY };
 }
 
+function getSubtitleText(dialog, language, index) {
+	let text = dialog?.[language]?.[index];
+	if (text == null && language === 'Thai') {
+		language = 'English';
+		text = dialog?.[language]?.[index];
+	}
+	textbox.lang = subtitleLocales[language];
+	return text ?? "";
+}
+
 function updateSubtitleLanguage() {
 	let language = subtitleLanguagePreference;
 	if (language === 'auto') {
@@ -492,6 +508,8 @@ function updateSubtitleLanguage() {
 			language = 'Japanese';
 		} else if (primary === 'ko' || primary === 'korean' || primary === 'koreana') {
 			language = 'Korean';
+		} else if (primary === 'th' || primary === 'thai') {
+			language = 'Thai';
 		} else {
 			language = 'English';
 		}
@@ -501,7 +519,7 @@ function updateSubtitleLanguage() {
 	window.selectedLanguage = language;
 	textbox.lang = subtitleLocales[language];
 	const clip = currentTracks.at(-1);
-	if (dialogBox && clip) textbox.textContent = clip.dialog[language][clip.index];
+	if (dialogBox && clip) textbox.textContent = getSubtitleText(clip.dialog, language, clip.index);
 }
 
 function init() {
